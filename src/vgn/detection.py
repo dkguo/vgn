@@ -4,10 +4,11 @@ import numpy as np
 from scipy import ndimage
 import torch
 
-from vgn import vis
+# from vgn import vis
 from vgn.grasp import *
 from vgn.utils.transform import Transform, Rotation
 from vgn.networks import load_network
+from IPython import embed
 
 
 class VGN(object):
@@ -33,10 +34,10 @@ class VGN(object):
             grasps = [from_voxel_coordinates(g, voxel_size) for g in grasps[p]]
             scores = scores[p]
 
-        if self.rviz:
-            vis.draw_quality(qual_vol, state.tsdf.voxel_size, threshold=0.01)
+        # if self.rviz:
+        #     vis.draw_quality(qual_vol, state.tsdf.voxel_size, threshold=0.01)
 
-        return grasps, scores, toc
+        return grasps, scores, toc, qual_vol
 
 
 def predict(tsdf_vol, net, device):

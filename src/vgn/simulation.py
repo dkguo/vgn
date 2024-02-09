@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import pybullet
+from IPython import embed
 
 from vgn.grasp import Label
 from vgn.perception import *
@@ -14,9 +15,10 @@ class ClutterRemovalSim(object):
     def __init__(self, scene, object_set, gui=True, seed=None):
         assert scene in ["pile", "packed"]
 
-        self.urdf_root = Path("data/urdfs")
+        self.urdf_root = Path("/home/gdk/Repositories/DualArmManipulation/evaluation/vgn/data/urdfs")
         self.scene = scene
         self.object_set = object_set
+        print('object_set:', object_set)
         self.discover_objects()
 
         self.global_scaling = {"blocks": 1.67}.get(object_set, 1.0)
@@ -35,7 +37,9 @@ class ClutterRemovalSim(object):
 
     def discover_objects(self):
         root = self.urdf_root / self.object_set
+        # embed()
         self.object_urdfs = [f for f in root.iterdir() if f.suffix == ".urdf"]
+        print('object_urdfs:', self.object_urdfs)
 
     def save_state(self):
         self._snapshot_id = self.world.save_state()
@@ -93,7 +97,8 @@ class ClutterRemovalSim(object):
         box = self.world.load_urdf(urdf, pose, scale=1.3)
 
         # drop objects
-        urdfs = self.rng.choice(self.object_urdfs, size=object_count)
+        urdfs = self.rng.choice(self.object_urdfs, size=10)
+        print('urdfs:', urdfs)
         for urdf in urdfs:
             rotation = Rotation.random(random_state=self.rng)
             xy = self.rng.uniform(1.0 / 3.0 * self.size, 2.0 / 3.0 * self.size, 2)
@@ -113,6 +118,7 @@ class ClutterRemovalSim(object):
         while self.num_objects < object_count and attempts < max_attempts:
             self.save_state()
             urdf = self.rng.choice(self.object_urdfs)
+            print(urdf)
             x = self.rng.uniform(0.08, 0.22)
             y = self.rng.uniform(0.08, 0.22)
             z = 1.0
@@ -154,6 +160,11 @@ class ClutterRemovalSim(object):
         timing = 0.0
         for extrinsic in extrinsics:
             depth_img = self.camera.render(extrinsic)[1]
+            print(depth_img.shape)
+            from matplotlib import pyplot as plt
+            plt.imshow(depth_img, cmap=plt.cm.gray_r)
+
+            # embed()
             tic = time.time()
             tsdf.integrate(depth_img, self.camera.intrinsic, extrinsic)
             timing += time.time() - tic
@@ -244,7 +255,7 @@ class Gripper(object):
 
     def __init__(self, world):
         self.world = world
-        self.urdf_path = Path("data/urdfs/panda/hand.urdf")
+        self.urdf_path = Path("/home/gdk/Repositories/DualArmManipulation/evaluation/vgn/data/urdfs/panda/hand.urdf")
 
         self.max_opening_width = 0.08
         self.finger_depth = 0.05

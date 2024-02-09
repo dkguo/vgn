@@ -4,7 +4,6 @@ from pathlib import Path
 from vgn.detection import VGN
 from vgn.experiments import clutter_removal
 
-
 def main(args):
 
     if args.rviz or str(args.model) == "gpd":
